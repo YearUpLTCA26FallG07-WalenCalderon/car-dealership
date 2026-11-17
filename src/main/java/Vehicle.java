@@ -1,35 +1,30 @@
 import java.math.BigDecimal;
 
-public class Vehicle  {
-    private  int vin;
+public class Vehicle {
+
+    private int vin;
     private int year;
     private String make;
     private String model;
-    private String VehicleType;
+    private String vehicleType;
     private String color;
     private int odometer;
     private BigDecimal price;
 
-    public Vehicle(int vin, int year, String make, String model, String vehicleType
-            , String color, int odometer, BigDecimal price) {
+    public Vehicle(int vin, int year, String make, String model,
+                   String vehicleType, String color,
+                   int odometer, BigDecimal price) {
+
         this.vin = vin;
         this.year = year;
         this.make = make;
         this.model = model;
-        VehicleType = vehicleType;
+        this.vehicleType = vehicleType;
         this.color = color;
         this.odometer = odometer;
         this.price = price;
     }
 
-
-
-
-
-
-
-
-    //getters and setters-----------------------------------------------------------------------------------------------|
     public int getVin() {
         return vin;
     }
@@ -63,11 +58,11 @@ public class Vehicle  {
     }
 
     public String getVehicleType() {
-        return VehicleType;
+        return vehicleType;
     }
 
-    public void setVehicleType(String vehicleTypoe) {
-        VehicleType = vehicleTypoe;
+    public void setVehicleType(String vehicleType) {
+        this.vehicleType = vehicleType;
     }
 
     public String getColor() {
@@ -92,5 +87,20 @@ public class Vehicle  {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%d | %d | %s | %s | %s | %s | %d miles | $%s",
+                vin,
+                year,
+                make,
+                model,
+                vehicleType,
+                color,
+                odometer,
+                price.toPlainString()
+        );
     }
 }

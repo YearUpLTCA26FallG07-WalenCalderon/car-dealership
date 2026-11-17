@@ -3,124 +3,157 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Dealership {
+
     private String name;
     private String address;
     private String phone;
-    private static ArrayList<Vehicle> inventory = new ArrayList<>();
+
+    private final ArrayList<Vehicle> inventory;
 
     public Dealership(String name, String address, String phone) {
         this.name = name;
         this.address = address;
         this.phone = phone;
-    }
-    public static List<Vehicle> getVehiclesByPrice(BigDecimal minPrice, BigDecimal maxPrice) {
-//todo
-        return null;
+        this.inventory = new ArrayList<>();
     }
 
-    public static List<Vehicle> getVehiclesByMakeModel(String make, String model) {
-//todo
-        return null;
+    public List<Vehicle> getAllVehicles() {
+        return new ArrayList<>(inventory);
     }
 
-    public static List<Vehicle> getVehiclesByYear(int minYear, int maxYear){
-//todo
-        return null;
-    }
+    public List<Vehicle> getVehiclesByPrice(
+            BigDecimal minPrice,
+            BigDecimal maxPrice) {
 
-    public static List<Vehicle> getVehiclesByColor(String color) {
-        //todo
-        return null;
-    }
+        List<Vehicle> results = new ArrayList<>();
 
-    public static List<Vehicle> getVehiclesByMileage(double minMileage, double maxMileage) {
-        //todo
-        return null;
-    }
+        for (Vehicle vehicle : inventory) {
 
-    public static List<Vehicle> getVehiclesByType(String vehicleType) {
-        //todo
-        return null;
-    }
+            if (vehicle.getPrice().compareTo(minPrice) >= 0
+                    && vehicle.getPrice().compareTo(maxPrice) <= 0) {
 
-    public static List<Vehicle> getAllVehicles() {
-//        List<Vehicle> vehicle = new ArrayList<>(inventory);
-//        return vehicle; //todo
-        return null;
-    }
-
-    public static void addDeposit(ArrayList<Transaction> transactions){
-        try {
-
-            LocalDate date = LocalDate.now();
-            LocalTime time = LocalTime.now();
-            String description = Console.promptForString("Description: ");
-            String vendor = Console.promptForString("Vendor: ");
-            double amount;
-            do {
-                amount = Console.promptForDouble("Amount: ");
-
-                if(amount <= 0 ){
-                    System.out.println("Payment should be more than 0");
-                }
-
-            }while (amount <= 0);
-            FileWriter writer = new FileWriter("src/main/resources/transactions.csv", true);
-
-            Transaction transaction = new Transaction(date, time,description,vendor, amount);
-            String line = String.format("%s|%s|%s|%s|%.2f%n",
-                    transaction.getDate(),
-                    transaction.getTime().format(
-                            DateTimeFormatter.ofPattern("HH:mm:ss")
-                    ),
-                    transaction.getDescription(),
-                    transaction.getVendor(),
-                    transaction.getAmount()
-            );
-            writer.write(line);
-
-            transactions.add(transaction);
-
-            transactions.sort(
-                    Comparator.comparing(Transaction::getDate) //Comparing by date
-                            .thenComparing(Transaction::getTime) //Comparing by time
-                            .reversed()//reversing the sorted list (ex: instead of 12345 is 54321)
-            );
-            writer.close();
-
-        }catch (IOException e) {
-            System.out.println("Error saving transaction: " + e.getMessage());
+                results.add(vehicle);
+            }
         }
+
+        return results;
+    }
+
+    public List<Vehicle> getVehiclesByMakeModel(
+            String make,
+            String model) {
+
+        List<Vehicle> results = new ArrayList<>();
+
+        for (Vehicle vehicle : inventory) {
+
+            if (vehicle.getMake().toLowerCase()
+                    .contains(make.trim().toLowerCase())
+                    && vehicle.getModel().toLowerCase()
+                    .contains(model.trim().toLowerCase())) {
+
+                results.add(vehicle);
+            }
+        }
+
+        return results;
+    }
+
+    public List<Vehicle> getVehiclesByYear(
+            int minYear,
+            int maxYear) {
+
+        List<Vehicle> results = new ArrayList<>();
+
+        for (Vehicle vehicle : inventory) {
+
+            if (vehicle.getYear() >= minYear
+                    && vehicle.getYear() <= maxYear) {
+
+                results.add(vehicle);
+            }
+        }
+
+        return results;
+    }
+
+    public List<Vehicle> getVehiclesByColor(String color) {
+
+        List<Vehicle> results = new ArrayList<>();
+
+        for (Vehicle vehicle : inventory) {
+
+            if (vehicle.getColor().equalsIgnoreCase(color.trim())) {
+                results.add(vehicle);
+            }
+        }
+
+        return results;
+    }
+
+    public List<Vehicle> getVehiclesByMileage(
+            int minMileage,
+            int maxMileage) {
+
+        List<Vehicle> results = new ArrayList<>();
+
+        for (Vehicle vehicle : inventory) {
+
+            if (vehicle.getOdometer() >= minMileage
+                    && vehicle.getOdometer() <= maxMileage) {
+
+                results.add(vehicle);
+            }
+        }
+
+        return results;
+    }
+
+    public List<Vehicle> getVehiclesByType(String vehicleType) {
+
+        List<Vehicle> results = new ArrayList<>();
+
+        for (Vehicle vehicle : inventory) {
+
+            if (vehicle.getVehicleType()
+                    .equalsIgnoreCase(vehicleType.trim())) {
+
+                results.add(vehicle);
+            }
+        }
+
+        return results;
+    }
+
+    public void addVehicle(Vehicle vehicle) {
+        inventory.add(vehicle);
     }
 
     public void removeVehicle(Vehicle vehicle) {
-//        if(inventory.contains(vehicle)){
-//            inventory.remove(vehicle);
-//        }]
-
+        inventory.remove(vehicle);
     }
 
+    public String getName() {
+        return name;
+    }
 
-    //This method does not belong here but we prolly use it
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    /*public static ArrayList <Product> searchByPriceRange(double maxPrice, double minPrice, ArrayList <Product> inventory){
-        ArrayList<Product> productInRange = new ArrayList<>();
-        for(int i = 0; i < inventory.size(); i++){
-            Product product = inventory.get(i);
+    public String getAddress() {
+        return address;
+    }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
-            if(product.getPrice() > minPrice &&
-                    product.getPrice() < maxPrice){
-                productInRange.add(product);
-            }
+    public String getPhone() {
+        return phone;
+    }
 
-
-        }
-        return productInRange;
-
-    }//end of search by price range*/
-
-
-
-
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 }

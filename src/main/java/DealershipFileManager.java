@@ -1,100 +1,116 @@
 import java.io.BufferedReader;
-import java.io.FileReader;
-
-import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-public static Dealership getDealership() {
+public class DealershipFileManager {
 
-    try (BufferedReader reader = new BufferedReader(
-            new FileReader("src/main/resources/inventory.csv"))) {
+    private static final Path FILE_PATH =
+            Path.of("src/main/resources/inventory.csv");
 
-        // Read dealership information
-        String line = reader.readLine();
+    public Dealership getDealership() {
 
-        if (line == null) {
-            throw new IOException("Inventory file is empty");
-        }
+        try (BufferedReader reader = Files.newBufferedReader(
+                FILE_PATH, StandardCharsets.UTF_8)) {
 
-        String[] dealershipData = line.split("\\|");
+            String line = reader.readLine();
 
-        String name = dealershipData[0];
-        String address = dealershipData[1];
-        String phone = dealershipData[2];
+            if (line == null) {
+                throw new IOException("Inventory file is empty.");
+            }
 
-        // Create dealership object
-        Dealership dealership = new Dealership(name, address, phone);
+            String[] info = line.split("\\|", -1);
 
-        // Read vehicles
-        while ((line = reader.readLine()) != null) {
+            if (info.length != 3) {
+                throw new IOException(
+                        "Invalid dealership information in first line.");
+            }
 
-            String[] tokens = line.split("\\|");
-
-            int vin = Integer.parseInt(tokens[0]);
-            int year = Integer.parseInt(tokens[1]);
-            String make = tokens[2];
-            String model = tokens[3];
-            String vehicleType = tokens[4];
-            String color = tokens[5];
-            int odometer = Integer.parseInt(tokens[6]);
-            BigDecimal price = new BigDecimal(tokens[7]);
-
-            Vehicle vehicle = new Vehicle(
-                    vin,
-                    year,
-                    make,
-                    model,
-                    vehicleType,
-                    color,
-                    odometer,
-                    price
+            Dealership dealership = new Dealership(
+                    info[0],
+                    info[1],
+                    info[2]
             );
 
-            dealership.addVehicle(vehicle);
-        }
+            while ((line = reader.readLine()) != null) {
 
-        return dealership;
+                if (line.isBlank()) {
+                    continue;
+                }
 
-    } catch (IOException e) {
-        throw new RuntimeException("Error reading dealership: " + e.getMessage(), e);
-    }
-}
+                String[] parts = line.split("\\|", -1);
 
-    public static void saveDealership(Dealership dealership) {
-        try (FileWriter writer = new FileWriter(
-                "src/main/resources/inventory.csv")) {
+                if (parts.length != 8) {
+                    throw new IOException(
+                            "Invalid vehicle record: " + line);
+                }
 
-            // Save dealership information
-            String dealershipInfo = String.format(
-                    "%s|%s|%s%n",
-                    dealership.getName(),
-                    dealership.getAddress(),
-                    dealership.getPhone()
-            );
-
-            writer.write(dealershipInfo);
-
-            // Save every vehicle
-            for (Vehicle vehicle : dealership.getAllVehicles()) {
-
-                String line = String.format(
-                        "%d|%d|%s|%s|%s|%s|%d|%s%n",
-                        vehicle.getVin(),
-                        vehicle.getYear(),
-                        vehicle.getMake(),
-                        vehicle.getModel(),
-                        vehicle.getVehicleType(),
-                        vehicle.getColor(),
-                        vehicle.getOdometer(),
-                        vehicle.getPrice().toPlainString()
+                Vehicle vehicle = new Vehicle(
+                        Integer.parseInt(parts[0]),
+                        Integer.parseInt(parts[1]),
+                        parts[2],
+                        parts[3],
+                        parts[4],
+                        parts[5],
+                        Integer.parseInt(parts[6]),
+                        new BigDecimal(parts[7])
                 );
 
-                writer.write(line);
+                dealership.addVehicle(vehicle);
+            }
+
+            return dealership;
+
+        } catch (IOException | NumberFormatException e) {
+
+            throw new IllegalStateException(
+                    "Could not load inventory.csv: " + e.getMessage(), e);
+        }
+    }
+
+    public void saveDealership(Dealership dealership) {
+
+        try {
+
+            Files.createDirectories(FILE_PATH.getParent());
+
+            try (BufferedWriter writer = Files.newBufferedWriter(
+                    FILE_PATH, StandardCharsets.UTF_8)) {
+
+                writer.write(String.join(
+                        "|",
+                        dealership.getName(),
+                        dealership.getAddress(),
+                        dealership.getPhone()
+                ));
+
+                writer.newLine();
+
+                for (Vehicle vehicle : dealership.getAllVehicles()) {
+
+                    writer.write(String.format(
+                            "%d|%d|%s|%s|%s|%s|%d|%s",
+                            vehicle.getVin(),
+                            vehicle.getYear(),
+                            vehicle.getMake(),
+                            vehicle.getModel(),
+                            vehicle.getVehicleType(),
+                            vehicle.getColor(),
+                            vehicle.getOdometer(),
+                            vehicle.getPrice().toPlainString()
+                    ));
+
+                    writer.newLine();
+                }
             }
 
         } catch (IOException e) {
-            System.out.println("Error saving dealership: " + e.getMessage());
+
+            throw new IllegalStateException(
+                    "Could not save inventory.csv: " + e.getMessage(), e);
         }
     }
 }
